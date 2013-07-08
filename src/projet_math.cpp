@@ -12,16 +12,6 @@ vector<Point*> CONTROLE_POINT;
 Point * dragedPoint = NULL;
 Courbe bspline;
 
-Courbe create_dummy_courbe() {
-	Courbe c;
-	c.pts().push_back(Point(1, 1.0, 0));
-	c.pts().push_back(Point(2, 1.0, 0));
-	c.pts().push_back(Point(3, 1.2, 0));
-	c.pts().push_back(Point(3, 1.4, 0));
-	c.pts().push_back(Point(4, 1.6, 0));
-	c.pts().push_back(Point(5, 1.8, 0));
-	return c;
-}
 
 float calc_poids(int p, int i, float t, vector<float> & T) {
 	if (p == 0) {
@@ -94,7 +84,6 @@ void keyBoard3D(unsigned char touche, int x, int y);
 void mouse2D(int button, int state, int x, int y);
 void mouseMotion2D(int x, int y);
 void keyBoard2D(unsigned char touche, int x, int y);
-
 void initRendering()
 
 {
@@ -182,7 +171,8 @@ void drawScene3D()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, light_diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, light_ambient);
 
-	vector<vector<Point> > surface = bspline.extrudeZ(10, G_LENGTH_EXTRUSION, 1);
+	//vector<vector<Point> > surface = bspline.extrudeZ(10, G_LENGTH_EXTRUSION, 1);
+	vector<vector<Point> > surface = bspline.rotateY(10);
 
 	if (G_ISWIREFRAME) {
 		drawWires(surface);

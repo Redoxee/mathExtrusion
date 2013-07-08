@@ -38,8 +38,11 @@ vector<vector<Point> > Courbe::rotateX(int pas) {
 		vector<Point> section(_pts.size());
 		for (unsigned int j = 0; j < _pts.size(); ++j) {
 			Point p(_pts[j]);
-			p.Z(cosf(alpha) * p.Z());
-			p.Y(sinf(alpha) * p.Y());
+			float ny, nz;
+			ny = p.Y() * cosf(alpha) - p.Z() * sinf(alpha);
+			nz = p.Y() * sinf(alpha) + p.Z() * cosf(alpha);
+			p.Y(ny);
+			p.Z(nz);
 			section.push_back(p);
 		}
 
@@ -52,15 +55,23 @@ vector<vector<Point> > Courbe::rotateX(int pas) {
 vector<vector<Point> > Courbe::rotateY(int pas) {
 	vector<vector<Point> > res;
 
-	for (int i = 0; i < pas; ++i) {
+	for (int i = 0; i < pas+1; ++i) {
 		float alpha = (i * 1.0f / pas) * (2 * PI);
 		vector<Point> section(_pts.size());
 		for (unsigned int j = 0; j < _pts.size(); ++j) {
 			Point p(_pts[j]);
-			p.X(cosf(alpha) * p.X());
-			p.Z(sinf(alpha) * p.Z());
+			float nx, nz;
+
+			nx = cosf(alpha) * p.X() + sinf(alpha) * p.Z();
+			nz = -sinf(alpha) * p.X() + cosf(alpha) * p.Z();
+
+			p.X(nx);
+			p.Z(nz);
+
+			cout<<p;
 			section.push_back(p);
 		}
+		cout<<endl;
 
 		res.push_back(section);
 	}
