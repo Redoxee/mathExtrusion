@@ -28,20 +28,21 @@ public:
 	float X() const;
 	float Y() const;
 	float Z() const;
-    
-    void Set(float p_x, float p_y, float p_z);
-    
-	//operator
-    
-    bool operator==(const Point & p_v3);
-    Point& operator=(const Point & p_v3);
-    Point operator+(const Point & p_v3);
-    Point operator-(const Point & p_v3);
-    Point operator*(const float& scalair);
-    float dot(const Point& p_v3)const;
 
-    friend ostream& operator<<(ostream& out, const Point& vec);
-    friend double distance_points(Point p1,Point p2);
+	void Set(float p_x, float p_y, float p_z);
+
+	//operator
+
+	bool operator==(const Point & p_v3);
+	Point& operator=(const Point & p_v3);
+	Point operator+(const Point & p_v3);
+	Point operator-(const Point & p_v3);
+	Point operator*(const float& scalair);
+	Point operator*(const Point& p_2) const;
+	float dot(const Point& p_v3) const;
+
+	friend ostream& operator<<(ostream& out, const Point& vec);
+	friend double distance_points(Point p1, Point p2);
 };
 
 #endif /* defined(__BlueShield_FrameWork__vector3__) */

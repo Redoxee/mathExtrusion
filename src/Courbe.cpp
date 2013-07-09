@@ -52,12 +52,13 @@ vector<vector<Point> > Courbe::rotateX(int pas) {
 	return res;
 }
 
-vector<vector<Point> > Courbe::rotateY(int pas) {
-	vector<vector<Point> > res;
+vector<vector<Point> *> Courbe::rotateY(int pas) {
+	vector<vector<Point> *> res;
 
-	for (int i = 0; i < pas+1; ++i) {
+	for (int i = 0; i < pas + 1; ++i) {
 		float alpha = (i * 1.0f / pas) * (2 * PI);
-		vector<Point> section(_pts.size());
+		vector<Point> *section = new vector<Point>();
+		res.push_back(section);
 		for (unsigned int j = 0; j < _pts.size(); ++j) {
 			Point p(_pts[j]);
 			float nx, nz;
@@ -68,12 +69,9 @@ vector<vector<Point> > Courbe::rotateY(int pas) {
 			p.X(nx);
 			p.Z(nz);
 
-			cout<<p;
-			section.push_back(p);
+			section->push_back(p);
 		}
-		cout<<endl;
 
-		res.push_back(section);
 	}
 
 	return res;
@@ -98,20 +96,20 @@ vector<vector<Point> > Courbe::rotateZ(int pas) {
 	return res;
 }
 
-vector<vector<Point> > Courbe::extrudeZ(int pas, float longueur, float scale = 1) {
-	vector<vector<Point> > gride;
+vector<vector<Point> *> Courbe::extrudeZ(int pas, float longueur, float scale = 1) {
+	vector<vector<Point> *> gride;
 
 	for (float i = 0; i <= pas; ++i) {
 		float h = (i) / pas;
 
-		vector<Point> segment;
+		vector<Point> *segment = new vector<Point>();
 		for (unsigned int ip = 0; ip < _pts.size(); ++ip) {
 			Point p(_pts[ip]);
 			p.Z(p.Z() + longueur * h);
 
 			//p = p * h * scale;
 
-			segment.push_back(p);
+			segment->push_back(p);
 		}
 		gride.push_back(segment);
 	}

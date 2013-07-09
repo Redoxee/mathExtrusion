@@ -21,10 +21,10 @@ public:
 	void flatten();
 
 	std::vector<std::vector<Point> >rotateX(int);
-	std::vector<std::vector<Point> >rotateY(int);
+	std::vector<std::vector<Point > *> rotateY(int);
 	std::vector<std::vector<Point> >rotateZ(int);
 
-	std::vector<std::vector<Point> >extrudeZ(int,float,float);
+	std::vector<std::vector<Point> *>extrudeZ(int,float,float);
 
 	~Courbe();
 };

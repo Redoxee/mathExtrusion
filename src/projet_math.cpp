@@ -12,6 +12,17 @@ vector<Point*> CONTROLE_POINT;
 Point * dragedPoint = NULL;
 Courbe bspline;
 
+vector<Point*> CONTROLE_POINT_AME;
+Courbe bsplineAme;
+
+enum extrusion_mode {
+	simple, rotation
+};
+enum drawed_curve {
+	bsp,ame
+};
+
+drawed_curve DRAWED_CURVE = bsp;
 
 float calc_poids(int p, int i, float t, vector<float> & T) {
 	if (p == 0) {
@@ -73,17 +84,18 @@ Courbe comput_points(vector<Point*> & point_ctrls, vector<float> & tableau_noeud
 	return resultat;
 }
 
+extrusion_mode EXTRUSION_MODE = simple;
 char presse;
 int anglex, angley, x, y, xold, yold;
 
 void mousemotion3D(int x, int y);
 void mouse3D(int bouton, int etat, int x, int y);
 void special3D(int touche, int x, int y);
-void keyBoard3D(unsigned char touche, int x, int y);
+
+void keyBoard(unsigned char touche, int x, int y);
 
 void mouse2D(int button, int state, int x, int y);
 void mouseMotion2D(int x, int y);
-void keyBoard2D(unsigned char touche, int x, int y);
 void initRendering()
 
 {
@@ -95,26 +107,26 @@ void initRendering()
 void handleResize(int w, int h)
 
 {
-
-	glViewport(0, 0, w, h);
-
 	glMatrixMode(GL_PROJECTION);
-
-	gluPerspective(45.0, (double) w / (double) h, 1.0, 200);
-
+	glLoadIdentity();
+	glViewport(0, 0, w, h);
+	gluPerspective(45.0, (double) w / (double) h, 1.0, 10000);
+	glMatrixMode(GL_MODELVIEW);
 }
 void pointVert(Point & p) {
 	glVertex3f(p.X(), p.Y(), p.Z());
 }
-void drawSurface(vector<vector<Point> > & surface) {
+void drawSurface(vector<vector<Point> *> & surface) {
 
 	for (unsigned int i = 0; i < surface.size() - 1; ++i) {
 		glBegin(GL_TRIANGLE_STRIP);
 
-		for (unsigned int j = 0; j < surface[0].size(); ++j) {
+		for (unsigned int j = 0; j < surface[0]->size(); ++j) {
 
-			pointVert(surface[i + 1][j]);
-			pointVert(surface[i][j]);
+			pointVert((*surface[i + 1])[j]);
+			pointVert((*surface[i])[j]);
+			Point pn = (*surface[i + 1])[j] * (*surface[i])[j];
+			glNormal3f(pn.X(), pn.Y(), pn.Z());
 		}
 
 		glEnd();
@@ -122,17 +134,17 @@ void drawSurface(vector<vector<Point> > & surface) {
 	}
 }
 
-void drawWires(vector<vector<Point> > & surface) {
-	for (unsigned int i = 0; i < surface.size() - 1; ++i) {
-		int jmax = surface[i].size() - 1;
-		for (int ji = 0; ji < jmax; ++ji) {
+void drawWires(vector<vector<Point> *> & surface) {
+	for (unsigned int i = 0; i < surface.size() - 1; i++) {
+		int jmax = surface[i]->size() - 1;
+		for (int j = 0; j < jmax; j++) {
 			glBegin(GL_LINE_STRIP);
-			pointVert(surface[i][ji]);
-			pointVert(surface[i + 1][ji + 1]);
-			pointVert(surface[i + 1][ji]);
-			pointVert(surface[i][ji]);
-			pointVert(surface[i][ji + 1]);
-			pointVert(surface[i + 1][ji + 1]);
+			pointVert((*surface[i])[j]);
+			pointVert((*surface[i + 1])[j + 1]);
+			pointVert((*surface[i + 1])[j]);
+			pointVert((*surface[i])[j]);
+			pointVert((*surface[i])[j + 1]);
+			pointVert((*surface[i + 1])[j + 1]);
 			glEnd();
 		}
 	}
@@ -149,8 +161,8 @@ void drawScene3D()
 
 	glMatrixMode(GL_MODELVIEW);
 
-	GLfloat light_diffuse[] = { 0.5, 0.5, 0.5, 0.1 };
-	GLfloat light_ambient[] = { 0.5, 0.4, 0.5, 0.1 };
+	GLfloat light_diffuse[] = { 0.0, 0.7, 0.0, 0.7 };
+	GLfloat light_ambient[] = { 1.0, 1.0, 1.0, 0.5 };
 	GLfloat light_position[] = { 100.0, 100.0, 100.0, 0.1 };
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 	glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1);
@@ -171,9 +183,15 @@ void drawScene3D()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, light_diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, light_ambient);
 
-	//vector<vector<Point> > surface = bspline.extrudeZ(10, G_LENGTH_EXTRUSION, 1);
-	vector<vector<Point> > surface = bspline.rotateY(10);
-
+	vector<vector<Point> *> surface;
+	switch (EXTRUSION_MODE) {
+	case simple:
+		surface = bspline.extrudeZ(10, G_LENGTH_EXTRUSION, 1);
+		break;
+	case rotation:
+		surface = bspline.rotateY(10);
+		break;
+	}
 	if (G_ISWIREFRAME) {
 		drawWires(surface);
 	} else {
@@ -295,7 +313,7 @@ int main(int argc, char** argv)
 	glutMouseFunc(mouse3D);
 	glutMotionFunc(mousemotion3D);
 	glutSpecialFunc(special3D);
-	glutKeyboardFunc(keyBoard3D);
+	glutKeyboardFunc(keyBoard);
 
 //create the second  window
 
@@ -315,7 +333,7 @@ int main(int argc, char** argv)
 
 	glutMouseFunc(mouse2D);
 	glutMotionFunc(mouseMotion2D);
-	glutKeyboardFunc(keyBoard2D);
+	glutKeyboardFunc(keyBoard);
 
 	glutMainLoop();
 
@@ -349,11 +367,19 @@ void mousemotion3D(int x, int y) {
 	yold = y;
 }
 
+
 int DISTANCE_SELECTION = 5;
 void mouse2D(int button, int state, int x, int y) {
 	x = (x * 120 / 500) - 60;
 	y = (y * -120 / 500) + 60;
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+
+		Courbe & currentCurve = bspline;
+		vector<Point *> & currentPtsControle = CONTROLE_POINT;
+		if(DRAWED_CURVE = ame){
+			Courbe & currentCurve = bsplineAme;
+			vector<Point *> & currentPtsControle = CONTROLE_POINT_AME;
+		}
 
 		Point *p = new Point(x, y, 0);
 
@@ -396,21 +422,6 @@ void mouseMotion2D(int x, int y) {
 
 }
 
-void keyBoard2D(unsigned char touche, int x, int y) {
-	switch (touche) {
-	case 8:
-		if (CONTROLE_POINT.size() > 0) {
-			CONTROLE_POINT.pop_back();
-			vector<float> tableau_neuds;
-			bspline = comput_points(CONTROLE_POINT, tableau_neuds, 3, 0.1f, false);
-			bspline.flatten();
-			glutPostRedisplay();
-			glutSetWindow(1);
-			glutPostRedisplay();
-		}
-	}
-}
-
 void special3D(int touche, int x, int y) {
 	switch (touche) {
 	case GLUT_KEY_DOWN:
@@ -428,24 +439,52 @@ void special3D(int touche, int x, int y) {
 	}
 
 }
-void keyBoard3D(unsigned char touche, int x, int y) {
+void update_both_windows() {
+	glutSetWindow(2);
+	glutPostRedisplay();
+	glutSetWindow(1);
+	glutPostRedisplay();
+}
+
+void keyBoard(unsigned char touche, int x, int y) {
 	switch (touche) {
+	case 8:
+		if (CONTROLE_POINT.size() > 0) {
+			CONTROLE_POINT.pop_back();
+			vector<float> tableau_neuds;
+			bspline = comput_points(CONTROLE_POINT, tableau_neuds, 3, 0.1f, false);
+			bspline.flatten();
+			update_both_windows();
+		}
+		break;
 	case 'w':
 		G_ISWIREFRAME = !G_ISWIREFRAME;
-		glutSetWindow(1);
-		glutPostRedisplay();
+		update_both_windows();
 		break;
 	case '9':
 		G_LENGTH_EXTRUSION += 1;
-		glutSetWindow(1);
-		glutPostRedisplay();
+		update_both_windows();
 		break;
 	case '3':
 		if (G_LENGTH_EXTRUSION > 1) {
 			G_LENGTH_EXTRUSION -= 1;
 		}
-		glutSetWindow(1);
-		glutPostRedisplay();
+		update_both_windows();
+		break;
+	case '4':
+		EXTRUSION_MODE = simple;
+		update_both_windows();
+		break;
+	case '5':
+		EXTRUSION_MODE = rotation;
+		update_both_windows();
+		break;
+	case 'a':
+			if (DRAWED_CURVE == bsp){
+				DRAWED_CURVE = ame;
+			}else{
+				DRAWED_CURVE = bsp;
+			}
 		break;
 	}
 }

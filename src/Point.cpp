@@ -103,14 +103,15 @@ Point Point::operator *(const float & scalair) {
 	return res;
 }
 
-ostream& operator<<(ostream& out, const Point& vec)
-{
-	out<<"("<<vec.X()<<","<<vec.Y()<<","<<vec.Z()<<")";
+ostream& operator<<(ostream& out, const Point& vec) {
+	out << "(" << vec.X() << "," << vec.Y() << "," << vec.Z() << ")";
 	return out;
 }
 
+Point Point::operator*(const Point& p) const {
+	return Point(y * p.z - z * p.y, z * p.x - x * p.z, x * p.y - y - p.x);
+}
 
-double distance_points(Point p1,Point p2)
-{
-	return sqrt(pow(p2.X()-p1.X() , 2) + pow(p2.Y() - p1.Y(),2));
+double distance_points(Point p1, Point p2) {
+	return sqrt(pow(p2.X() - p1.X(), 2) + pow(p2.Y() - p1.Y(), 2));
 }
